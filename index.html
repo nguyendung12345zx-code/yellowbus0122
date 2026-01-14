@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magic Learning Pro (V54 - Final Perfect)</title>
+    <title>Magic Learning Pro (V55 - Final Polish)</title>
     <style>
         /* === 基础样式 === */
         :root { --primary: #2979FF; --bg-grey: #F5F7FA; --text-main: #333; --green: #4CAF50; }
@@ -22,10 +22,13 @@
         }
         #scene-img { width: 100%; height: 100%; object-fit: contain; object-position: center; }
 
-        /* 左上角悬浮控制台 */
+        /* ★ 修复1：调整控制台位置，往下挪，避免贴边 */
         .controls-overlay-left {
-            position: absolute; top: 10px; left: 10px; z-index: 100;
-            display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+            position: absolute; 
+            top: 35px; /* 原来是10px，现在往下移，避开刘海和圆角 */
+            left: 15px; 
+            z-index: 100;
+            display: flex; flex-direction: column; gap: 10px; align-items: flex-start;
         }
         .control-row {
             display: flex; gap: 6px; background: rgba(0, 0, 0, 0.6); 
@@ -39,13 +42,13 @@
         .mini-btn.active { background: var(--primary); border-color: var(--primary); font-weight: bold; }
         .play-main-btn {
             background: var(--green); color: white; border: none;
-            padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold;
+            padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: bold;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 4px;
         }
         .play-main-btn.playing { background: #E53935; }
 
-        /* 右上角悬浮返回 */
-        .controls-overlay-right { position: absolute; top: 10px; right: 10px; z-index: 100; }
+        /* 右上角返回按钮也稍微下移 */
+        .controls-overlay-right { position: absolute; top: 35px; right: 15px; z-index: 100; }
         .back-pill {
             background: rgba(255,255,255,0.9); color: #333; border: 1px solid #ccc; 
             padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;
@@ -58,24 +61,22 @@
             overflow-y: auto; padding: 15px; transition: flex 0.3s; 
         }
 
-        /* === 3. 底部：词汇表区域 (核心修复) === */
+        /* === 3. 底部：词汇表区域 === */
         #col-right { 
             display: flex; flex-direction: column; 
-            flex: 0 0 auto; /* 高度自适应 */
+            flex: 0 0 auto; 
             background: white; border-top: 2px solid #FFD54F; z-index: 30; 
             box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
         }
         
-        /* 标题栏 */
         .vocab-header-container { 
             display: flex; align-items: center; justify-content: space-between; 
             padding: 10px 15px; background: #FFF8E1; border-bottom: 1px solid #FFE082;
             flex-shrink: 0;
         }
-        /* 点击文字切换模式 */
         .vocab-header-text { font-weight: bold; font-size: 14px; color: #5D4037; flex: 1; cursor: pointer; user-select: none; }
         
-        /* ★ 明确的开关按钮 */
+        /* 按钮样式 */
         .toggle-btn { 
             background: white; border: 1px solid #FFCA28; width: 28px; height: 28px; 
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
@@ -84,18 +85,15 @@
         }
         .toggle-btn:active { background: #FFF3E0; transform: scale(0.95); }
 
-        /* 单词列表容器 */
+        /* 单词列表 */
         .vocab-list { 
-            /* 默认隐藏 (折叠) */
-            display: none; 
-            /* 展开时的高度：固定占屏幕40%，内部滚动 */
-            height: 40vh; 
+            display: none; /* 默认隐藏 */
+            height: 40vh; /* 展开高度 */
             overflow-y: auto; 
             padding: 10px; 
             background: white;
             -webkit-overflow-scrolling: touch; 
         }
-        /* 展开状态类 */
         .vocab-list.expanded { display: block; }
 
         /* === PC端适配 === */
@@ -104,9 +102,10 @@
             #col-left { flex: 0 0 400px; height: 100%; border-right: 1px solid #ddd; border-bottom: none; }
             #col-mid { flex: 1; border-right: 1px solid #ddd; }
             #col-right { flex: 0 0 300px; height: 100%; border-top: none; }
-            .vocab-list { display: block !important; height: auto; flex: 1; } 
-            .toggle-btn { display: none; } 
-            .vocab-header-container { cursor: default; }
+            /* ★ 修复2：PC端现在也允许手动折叠了，不再强制 display:block */
+            /* 默认PC端让它是展开的，但可以通过按钮关闭 */
+            .vocab-list { height: auto; flex: 1; }
+            /* 如果您想PC端默认展开，可以在 JS 里判断屏幕宽度来添加 expanded 类 */
         }
 
         /* 卡片样式 */
@@ -116,7 +115,6 @@
         .cn-text { font-size: 14px; color: #666; margin-bottom: 5px; }
         .highlight-word { color: #00897B; border-bottom: 2px solid #4DB6AC; font-weight: bold; cursor: pointer; }
         
-        /* 单词卡 */
         .vocab-card { border: 1px solid #eee; border-radius: 8px; padding: 10px; margin-bottom: 8px; background: #fff; border-left: 4px solid #ddd; cursor: pointer; }
         .vocab-card.focused { border-left-color: #FF9800 !important; background-color: #FFF3E0 !important; }
         .vocab-top { display: flex; justify-content: space-between; align-items: center; }
@@ -126,7 +124,6 @@
         .vocab-card.revealed .vocab-mask { display: none; }
         .vocab-card.revealed .vocab-reveal { display: block; }
 
-        /* 互动题 */
         .section-divider { text-align: center; margin: 30px 0 20px 0; color: #888; font-size: 14px; }
         .quiz-card { background: #FFF3E0; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 2px dashed #FFB74D; }
         .quiz-opt { background: white; border: 1px solid #FFCC80; padding: 10px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -137,7 +134,6 @@
         .quiz-opt.wrong::after { content: '❌'; color: #C62828; }
         .audio-btn { border: 1px solid var(--primary); background-color: white; color: var(--primary); border-radius: 6px; padding: 4px 10px; margin-left: 10px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 4px; transition: 0.2s; }
 
-        /* 登录与启动 */
         #login-overlay, #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #login-overlay { background: #2979FF; }
         #start-overlay { background: rgba(255,255,255, 0.95); backdrop-filter: blur(5px); }
@@ -157,11 +153,11 @@
             <button class="login-btn" onclick="checkAccountLogin()">登录</button>
             <p id="login-msg" style="color:red; font-size:13px; margin-top:10px; min-height:20px;"></p>
         </div>
-        <p style="margin-top:20px; font-size:12px; opacity:0.7; color:white;">Magic Learning Pro V54</p>
+        <p style="margin-top:20px; font-size:12px; opacity:0.7; color:white;">Magic Learning Pro V55</p>
     </div>
 
     <div id="menu-screen" style="padding:40px; text-align:center;">
-        <h2>📚 魔法精读 (V54)</h2>
+        <h2>📚 魔法精读 (V55)</h2>
         <div onclick="openBook()" style="background:white; display:inline-block; padding:20px; border-radius:15px; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.1); max-width: 320px;">
             <img id="cover-img" src="images/story001_yellowbus/p1.jpg" style="background-color:#eee; border-radius:10px; margin-bottom:10px; width: 100%; height: auto; min-height: 200px; object-fit: cover; aspect-ratio: 4/3;">
             <h3>The Yellow Bus</h3>
@@ -212,7 +208,6 @@
     let isFullVocabMode = false;
     const AUDIO_BASE = "images/story001_yellowbus/";
     
-    /* ================= 数据源 ================= */
     const storyData = {
         title: "The Yellow Bus",
         paragraphs: [
@@ -340,13 +335,19 @@
         document.getElementById('start-overlay').style.display = 'flex';
         renderContent();
         activateParagraphUI(0);
+        
+        // PC端默认展开
+        if (window.innerWidth >= 768) {
+            const list = document.getElementById('vocab-container');
+            const btn = document.getElementById('toggle-vocab-btn');
+            list.classList.add('expanded');
+            btn.innerText = '➖';
+        }
     }
 
-    // ★ 修复：显示/隐藏 词汇表 (控制 class)
     function toggleVocabVisibility() {
         const list = document.getElementById('vocab-container');
         const btn = document.getElementById('toggle-vocab-btn');
-        
         if (list.classList.contains('expanded')) {
             list.classList.remove('expanded');
             btn.innerText = '➕';
@@ -356,7 +357,6 @@
         }
     }
 
-    // 辅助：强制展开
     function forceExpandVocab() {
         const list = document.getElementById('vocab-container');
         const btn = document.getElementById('toggle-vocab-btn');
@@ -367,9 +367,7 @@
     }
 
     function toggleVocabMode() {
-        // 如果折叠了，先展开
         forceExpandVocab();
-
         if (isFullVocabMode) {
             isFullVocabMode = false;
             updateSidebar(currentIndex); 
@@ -447,7 +445,6 @@
         container.appendChild(spacer);
     }
 
-    /* === 播放核心 === */
     function playMp3(url, onEndCallback) {
         stopAllSound(false);
         if(!url) {
@@ -514,7 +511,6 @@
             }
         }
         
-        // ★ 核心：点击单词自动展开
         forceExpandVocab();
 
         const vocabCard = document.getElementById(`vocab-card-${word}`);
